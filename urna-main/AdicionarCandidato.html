@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Adicionar Candidatos</title>
+  <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous"></script>
+        <script src="node_modules/sweetalert2/dist/sweetalert2.all.min.js"></script>
+  <link rel="stylesheet" href="css/headerFooter.css" />
+  <style>
+      .centralizarCampos {
+        display: inline-block !important;
+        justify-content: center !important;
+      }
+  </style>
+</head>
+<body>
+<header>
+    <nav class="navbar navbar-toggleable-md bg-dark">
+        <input type="button" class="btn btn-light marginBotoes" onclick="javascript: window.location = 'index.html'" value="Votar">
+        <input type="button" class="btn btn-light marginBotoes" onclick="javascript: window.location = 'ListaCandidatos.html'" value="Lista Candidatos">
+        <input type="button" class="btn btn-light" onclick="javascript: window.location = 'AdicionarCandidato.html'" value="Adicionar Candidato">
+    </nav>
+</header>
+
+<div id="formRegistrarCandidato">
+  <div class="card">
+      <div class="card-body col-12 justify-content-center">
+          <div class="row">
+            <label>Nome Candidato:</label>
+            <input id="nomeC" class="col-6" type="text" placeholder="Digite o nome completo do candidato">
+          </div>
+          <div class="row">
+            <label>Nome Vice: </label>
+            <input id="nomeV" class="col-6" type="text" placeholder="Digite o nome completo do vice">
+          </div>
+          <div class="row ">
+          <label >Legenda:</label>
+          <input id="legenda" class="col-6" type="text" placeholder="Digite a legenda deste candidato">
+          </div>
+          <div class="row">
+          <label>Código Candidato:</label>
+          <input id="codigo" class="col-6" type="text" placeholder="Digite o código do candidato">
+          </div>
+          <input class="mt-4 btn btn-dark" onclick="salvar()" type="button" value="Salvar">
+      </div>
+  </div>
+</div>
+
+<div id="divErro" class="d-none">Ainda não existem candidatos cadastrados.</div>
+<div class="container-fluid col-12" id="listaCandidatos"></div>
+    <footer>
+        <div class="container-fluid bg-dark">
+            <div class="row">
+                <div class="col-12 alinharADireita">
+                    <h3>Urna Eletronica</h3>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script type="text/javascript">
+
+    var candidatos;
+        window.onload = function () {
+            obterCandidatos();
+        }
+
+        function obterCandidatos() {
+            $.ajax({
+                type: "GET",
+                url: "https://localhost:44310/ObterCandidatos",
+                async: false,
+                success: function(response) {
+                    let retorno = JSON.parse(response);
+                    if (retorno.length > 0) {
+                        candidatos = retorno;
+                    }
+                    
+                    if(retorno.Message != undefined ) {
+                        if (retorno.Message.includes("Erro:")) {
+                            $("#divErro").removeClass("d-none");
+                            Swal.fire(retorno.Message,'','warning')
+                        }
+                    }else {
+                        if(retorno.includes("Erro:")) {
+                            $("#divErro").removeClass("d-none");
+                            Swal.fire(retorno,'','warning')
+                        }
+                        renderTabela(candidatos);
+                    }
+                },
+                error: function(response) {
+                    Swal.fire('Não foi possível obter lista de candidatos.');
+                }
+            })
+        }
+
+        function deletar(el) {
+            let IdCandidatoString = $(el).attr("idCandidato");
+            let IdCandidato = parseInt(IdCandidatoString);
+            var data = {};
+            data = { IdCandidato: IdCandidato };
+            $.ajax({
+                type: "DELETE",
+                data: JSON.stringify(data),
+                url: "https://localhost:44310/DeletarCandidato",
+                async: false,
+                contentType: 'application/json',
+                dataType: 'json',
+                success: function(response) {
+                    if (response.Message != undefined) {
+                        if (response.includes("Erro:")) {
+                            Swal.fire(response,'','warning');
+                        }
+                    }
+                    else {
+                        Swal.fire({
+                            text: response,
+                            icon: "success",
+                            confirmButtonColor: "#28a745",
+                            confirmButtonText: "OK",
+                            showCancelButton: false,
+                            cancelButtonColor: "#d33",
+                        }).then((result) => {
+                            document.location.reload(true);
+                        });
+                    }
+                },
+                error: function(response) {
+                    Swal.fire('Não foi possível registrar o voto.', '', 'warning');
+                }
+            })
+        }
+
+        function salvar() {
+            if ($("#nomeC").val() == "" || $("#nomeV").val() == "" || $("#legenda").val() == "" || $("#codigo").val() == "") {
+                Swal.fire('Por favor preencha todos os campos e tente novamente','','warning')
+                return false;
+            }
+            let CodigoCandidato = $("#codigo").val();
+            let NomeCandidato = $("#nomeC").val();
+            let NomeDoVice = $("#nomeV").val();
+            let Legenda = $("#legenda").val();
+
+            var data = {};
+                data = { CodigoCandidato: CodigoCandidato, NomeCandidato: NomeCandidato, NomeDoVice: NomeDoVice, Legenda: Legenda }
+                $.ajax({
+                    type: "POST",
+                    data: JSON.stringify(data),
+                    url: "https://localhost:44310/RegistrarCandidato",
+                    async: false,
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    success: function(response) {
+                        if(response.Message != undefined) {
+                            if (response.Message.includes("Erro:")) {
+                                Swal.fire({
+                                    title: 'Erro',
+                                    text: response.Message,
+                                    icon: "warning",
+                                    confirmButtonColor: "#28a745",
+                                    confirmButtonText: "OK",
+                                    showCancelButton: false,
+                                    cancelButtonColor: "#d33",
+                                }).then((result) => {
+                                    document.location.reload(true);
+                                });
+                            }
+                        }
+                        else {
+                            Swal.fire({
+                                    text: response,
+                                    icon: "warning",
+                                    confirmButtonColor: "#28a745",
+                                    confirmButtonText: "OK",
+                                    showCancelButton: false,
+                                    cancelButtonColor: "#d33",
+                                }).then((result) => {
+                                    document.location.reload(true);
+                            });
+                        }
+                    },
+                    error: function(response) {
+                        Swal.fire('Não foi possível registrar o voto.', '', 'warning');
+                    }
+                })
+            
+        }
+
+        function renderTabela(candidatos) {
+            let _html = [];
+            _html[_html.length] = '<table class="table">';
+            _html[_html.length] = ' <thead>';
+            _html[_html.length] = '   <th>Nome do Candidato</th>';
+            _html[_html.length] = '   <th>Nome do Vice</th>';
+            _html[_html.length] = '   <th>Legenda</th>';
+            _html[_html.length] = '   <th>Deletar</th>';
+            _html[_html.length] = ' </thead>';
+            _html[_html.length] = ' <tbody>';
+            if (candidatos.length > 0) {
+                candidatos.forEach(element => {
+                    _html[_html.length] = ' <tr>';
+                    _html[_html.length] = '   <td>' + element.NomeCandidato + '</td>';
+                    _html[_html.length] = '   <td>' + element.NomeVice + '</td>';
+                    _html[_html.length] = '   <td>' + element.Legenda + '</td>';
+                    _html[_html.length] = '   <td><input type="button" value="DEL" onclick="deletar(this)" nomeCandidato="' + element.NomeCandidato + '" idCandidato="' + element.IdCandidato + '" class="btn btn-danger"></td>';
+                    _html[_html.length] = ' </tr>';
+                });
+            }
+            _html[_html.length] = ' </tbody>';
+            _html[_html.length] = '</table>';
+
+            $("#listaCandidatos").html(_html.join(""));
+        }
+    </script>
+</body>
+</html>

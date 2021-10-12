@@ -1,0 +1,31 @@
+footer{
+    color: #00FFFF !important;
+    position: fixed;
+    bottom: 0px;
+    left: 0px;
+    right: 0px;
+    margin-bottom: 0px;
+}
+
+.alinharADireita{
+    text-align: right;
+}
+
+.marginBotoes {
+    margin-right: 3px !important;
+}
+
+.navbar{
+    color: #00FFFF;
+ }
+
+ .navbar .navbar-nav {
+    display: inline-block;
+    float: none;
+    vertical-align: top;
+  }
+  
+  .navbar {
+    text-align: center;
+    justify-content: center !important;
+  }
