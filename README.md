@@ -1,7 +1,9 @@
 Aplicativo urna eletronica, 
 Requisitos:
-1- Criar um banco sql chamado UrnaEletronica
+1- Criar um banco sql chamado UrnaEletronica;
 
-2- abrir a solução do visual studio e rodar o comando no console update-database
+2- abrir a solução do visual studio e rodar o comando no console update-database;
 
-3- Entrar nas paginas html criadas no projeto urna-main
+3 - rodar a api;
+
+3- Entrar nas paginas html criadas no projeto urna-main;
